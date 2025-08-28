@@ -12,22 +12,24 @@ final class SaveService {
     }
 
     func save(note: Note, drawing: PKDrawing) {
-        let directory = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask).first!
-        let fileURL = directory.appendingPathComponent("\(note.id.uuidString).drawing")
-        do {
-            try drawing.dataRepresentation().write(to: fileURL)
-        } catch {
-            print("Failed to save drawing: \(error)")
-        }
-
-        note.updatedAt = Date()
-        do {
-            try context.save()
-            DispatchQueue.global().async {
-                self.searchIndex.index(note: note)
+        context.perform {
+            let directory = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask).first!
+            let fileURL = directory.appendingPathComponent("\(note.id.uuidString).drawing")
+            do {
+                try drawing.dataRepresentation().write(to: fileURL)
+            } catch {
+                print("Failed to save drawing: \(error)")
             }
-        } catch {
-            print("Core Data save failed: \(error)")
+
+            note.updatedAt = Date()
+            do {
+                try self.context.save()
+                DispatchQueue.global(qos: .background).async {
+                    self.searchIndex.index(note: note)
+                }
+            } catch {
+                print("Core Data save failed: \(error)")
+            }
         }
     }
 }
