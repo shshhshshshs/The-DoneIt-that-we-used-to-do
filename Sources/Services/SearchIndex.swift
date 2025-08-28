@@ -17,7 +17,8 @@ final class SearchIndex {
     }
 
     func index(note: Note) {
-        let insertSQL = "INSERT INTO notes (id, title, text, keywords) VALUES (?, ?, ?, ?);"
+        // Use INSERT OR REPLACE so re-indexing an existing note updates its entry
+        let insertSQL = "INSERT OR REPLACE INTO notes (id, title, text, keywords) VALUES (?, ?, ?, ?);"
         var stmt: OpaquePointer?
         if sqlite3_prepare_v2(db, insertSQL, -1, &stmt, nil) == SQLITE_OK {
             sqlite3_bind_text(stmt, 1, note.id.uuidString, -1, SQLITE_TRANSIENT)
