@@ -1,0 +1,19 @@
+# Xcode / Swift
+DerivedData/
+build/
+*.xcuserdatad
+*.xcworkspace/xcuserdata
+.DS_Store
+
+# SwiftPM
+.swiftpm/
+Package.resolved
+
+# CocoaPods / Carthage（如未用可忽略）
+Pods/
+Carthage/
+
+# User-specific
+*.xccheckout
+*.moved-aside
+*.xcuserstate
