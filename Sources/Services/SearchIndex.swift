@@ -4,16 +4,28 @@ import SQLite3
 final class SearchIndex {
     private var db: OpaquePointer?
 
-    init(path: URL) {
+    init(path: URL, existingNotes: [Note] = []) {
         sqlite3_open(path.path, &db)
-        let createSQL = """
-        CREATE VIRTUAL TABLE IF NOT EXISTS notes USING fts5(id, title, text, keywords);
-        """
-        sqlite3_exec(db, createSQL, nil, nil, nil)
+        rebuild(with: existingNotes)
     }
 
     deinit {
         sqlite3_close(db)
+    }
+
+    /// Rebuilds the full-text search table using an n-gram tokenizer and
+    /// reindexes the provided notes.
+    /// - Parameter notes: Existing notes to be reindexed after rebuilding.
+    func rebuild(with notes: [Note]) {
+        sqlite3_exec(db, "DROP TABLE IF EXISTS notes;", nil, nil, nil)
+        let createSQL = """
+        CREATE VIRTUAL TABLE notes USING fts5(
+            id, title, text, keywords,
+            tokenize='unicode61 remove_diacritics 2'
+        );
+        """
+        sqlite3_exec(db, createSQL, nil, nil, nil)
+        notes.forEach { index(note: $0) }
     }
 
     func index(note: Note) {
