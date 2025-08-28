@@ -24,7 +24,10 @@ final class SaveService {
         do {
             try context.save()
             DispatchQueue.global().async {
-                self.searchIndex.index(note: note)
+                let id = note.id.uuidString
+                let text = note.blockTexts()
+                let keywords = note.keywords ?? []
+                self.searchIndex.upsert(id: id, title: note.title, text: text, keywords: keywords)
             }
         } catch {
             print("Core Data save failed: \(error)")

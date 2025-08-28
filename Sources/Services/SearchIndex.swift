@@ -16,15 +16,15 @@ final class SearchIndex {
         sqlite3_close(db)
     }
 
-    func index(note: Note) {
-        let insertSQL = "INSERT INTO notes (id, title, text, keywords) VALUES (?, ?, ?, ?);"
+    func upsert(id: String, title: String, text: String, keywords: [String]) {
+        let upsertSQL = "INSERT OR REPLACE INTO notes (id, title, text, keywords) VALUES (?, ?, ?, ?);"
         var stmt: OpaquePointer?
-        if sqlite3_prepare_v2(db, insertSQL, -1, &stmt, nil) == SQLITE_OK {
-            sqlite3_bind_text(stmt, 1, note.id.uuidString, -1, SQLITE_TRANSIENT)
-            sqlite3_bind_text(stmt, 2, note.title, -1, SQLITE_TRANSIENT)
-            sqlite3_bind_text(stmt, 3, note.blockTexts(), -1, SQLITE_TRANSIENT)
-            let keywords = note.keywords?.joined(separator: " ") ?? ""
-            sqlite3_bind_text(stmt, 4, keywords, -1, SQLITE_TRANSIENT)
+        if sqlite3_prepare_v2(db, upsertSQL, -1, &stmt, nil) == SQLITE_OK {
+            sqlite3_bind_text(stmt, 1, id, -1, SQLITE_TRANSIENT)
+            sqlite3_bind_text(stmt, 2, title, -1, SQLITE_TRANSIENT)
+            sqlite3_bind_text(stmt, 3, text, -1, SQLITE_TRANSIENT)
+            let keywordsString = keywords.joined(separator: " ")
+            sqlite3_bind_text(stmt, 4, keywordsString, -1, SQLITE_TRANSIENT)
             sqlite3_step(stmt)
         }
         sqlite3_finalize(stmt)
