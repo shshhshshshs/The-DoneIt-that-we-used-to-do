@@ -7,6 +7,7 @@ public class Note: NSManagedObject {
     @NSManaged public var title: String
     @NSManaged public var createdAt: Date
     @NSManaged public var updatedAt: Date
+    /// Array of keywords persisted using `StringArrayTransformer`.
     @NSManaged public var keywords: [String]?
     @NSManaged public var blocks: NSSet?
 }
